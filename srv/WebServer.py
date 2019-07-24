@@ -8,6 +8,9 @@ class WebServer():
     def __init__(self, controller):
         self.controller = controller
         self.app = web.Application()
+        self.runner = None
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
 
         self.app.add_routes([
                     web.get('/', self.handler),
@@ -30,7 +33,20 @@ class WebServer():
             await ws.send_str("Message received")
         return ws
 
-    def run(self):
-        web.run_app(self.app)
+    async def _run(self):
+        self.runner = web.AppRunner(self.app)
+        await self.runner.setup()
+        site = web.TCPSite(self.runner, 'localhost', 8080)
+        await site.start()
         
+    def run(self):
+        self.loop.create_task(self._run())
+        self.loop.run_forever()
 
+    async def _shutdown(self):
+        await self.runner.cleanup()
+        await self.runner.shutdown()
+        self.loop.stop()
+
+    def stop(self):
+        asyncio.run_coroutine_threadsafe(self._shutdown(), self.loop)

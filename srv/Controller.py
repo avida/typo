@@ -8,7 +8,7 @@ class Controller:
         return {"result": "ok"}
 
     def playerDisconnected(self, key):
-        return {}
+        return {"result": "ok"}
 
     def playerMsgReceived(self, key , message):
         return {}
