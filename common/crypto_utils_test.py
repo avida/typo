@@ -34,6 +34,8 @@ def test_base64():
     undec = crypto_utils.fromBase64(dec)
     assert len(undec) != 0
     assert undec == key_data
+    some_key = crypto_utils.fromBase64("_____")
+    assert some_key == None
 
 def test_sign_data():
     key = crypto_utils.generateECKey()
@@ -58,5 +60,7 @@ def test_load_bad_key():
     bad_key = crypto_utils.loadECKey(random_data)
     assert bad_key == None
     random_data = getRandomBytes(len(public_key_data))
+    bad_key = crypto_utils.loadPublicKey(None)
+    assert bad_key == None
     bad_key = crypto_utils.loadPublicKey(random_data)
     assert bad_key == None

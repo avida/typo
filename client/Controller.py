@@ -1,5 +1,6 @@
 import logging 
 import asyncio 
+from common.crypto_utils import generateECKey, serializePublicKey, toBase64, sign
 
 class Controller:
     def __init__(self, web_client, loop):
@@ -8,9 +9,17 @@ class Controller:
 
     async def main(self):
         while True:
-            res = await self.register()
-            logging.info(res)
+            try:
+                res = await self.register()
+                logging.info(res)
+            except Exception as e:
+                logging.warn(f"Unexpected error: {e}")
             await asyncio.sleep(3)
 
     def register(self):
-        return self.web_client.sendGetRequest("http://localhost:8080/register", query={"key": "dummyKey"})
+        key = generateECKey()
+        key_data = serializePublicKey(key.public_key())
+        key_str = toBase64(key_data)
+        key_signature = sign(key_data, key)
+        key_signature = toBase64(key_signature)
+        return self.web_client.sendGetRequest("http://localhost:8080/register", query={"key": key_str, "signature": key_signature})

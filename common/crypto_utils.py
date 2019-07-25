@@ -6,6 +6,7 @@ from cryptography.hazmat.primitives.serialization import load_pem_public_key
 from cryptography.hazmat.primitives import hashes
 from cryptography.exceptions import InvalidSignature
 import base64
+import binascii
 
 
 def generateECKey():
@@ -56,4 +57,7 @@ def toBase64(data: bytes) -> str:
     return base64.urlsafe_b64encode(data)
 
 def fromBase64(data: str) -> bytes:
-    return  base64.urlsafe_b64decode(data)
+    try:
+        return  base64.urlsafe_b64decode(data)
+    except binascii.Error:
+        return None
