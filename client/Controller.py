@@ -14,4 +14,3 @@ class Controller:
 
     def register(self):
         return self.web_client.sendGetRequest("http://localhost:8080/register", query={"key": "dummyKey"})
-
