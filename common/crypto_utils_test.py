@@ -64,3 +64,16 @@ def test_load_bad_key():
     assert bad_key == None
     bad_key = crypto_utils.loadPublicKey(random_data)
     assert bad_key == None
+
+def test_hash():
+    data = getRandomBytes(50)
+    hash_old = crypto_utils.getMD5(data)
+    assert len(hash_old) == 24
+    assert hash_old == crypto_utils.getMD5(data)
+    hash = crypto_utils.getMD5(bytes())
+    assert len(hash) == 24
+    assert hash == crypto_utils.getMD5(bytes())
+    data = getRandomBytes(10)
+    hash = crypto_utils.getMD5(data)
+    assert len(hash) == 24
+    assert hash != hash_old

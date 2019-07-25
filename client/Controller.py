@@ -12,9 +12,9 @@ class Controller:
             try:
                 res = await self.register()
                 logging.info(res)
+                break
             except Exception as e:
                 logging.warn(f"Unexpected error: {e}")
-            await asyncio.sleep(3)
 
     def register(self):
         key = generateECKey()

@@ -5,10 +5,10 @@ class Database:
     def __init__(self):
         logging.warn("init")
 
-    def storeUserInfo(self, userName):
+    def storeUserInfo(self, userId):
         logging.warn("store")
 
-    def getUserInfo(self, userName):
+    def getUserInfo(self, userId):
         return {}
 
 if __name__ == "__main__":

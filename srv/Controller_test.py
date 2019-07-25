@@ -2,9 +2,9 @@ from srv.Controller import Controller
 import json
 
 def test_playerRegister():
-    key = "someKey"
+    key = {"key": "someKey"}
     res = Controller().playerRegister(key)
-    assert  res["result"] == "ok"
+    assert  res["result"] == "error"
 
 def test_playerDisconnected():
     playerId = "someId"

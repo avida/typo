@@ -7,6 +7,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.exceptions import InvalidSignature
 import base64
 import binascii
+import hashlib
 
 
 def generateECKey():
@@ -61,3 +62,8 @@ def fromBase64(data: str) -> bytes:
         return  base64.urlsafe_b64decode(data)
     except binascii.Error:
         return None
+
+def getMD5(data: bytes) -> str:
+    m = hashlib.md5()
+    m.update(data)
+    return toBase64(m.digest())

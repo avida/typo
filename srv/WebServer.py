@@ -22,7 +22,7 @@ class WebServer():
     async def handler(self, request):
         if "key" not in request.query:
             return {"error": "No key parameter"}
-        res = self.controller.playerRegister(request.query["key"])
+        res = self.controller.playerRegister(request.query)
         return web.Response(text=f"{json.dumps(res)}")
 
     async def ws_handler(self, request):

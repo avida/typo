@@ -39,6 +39,6 @@ def test_handler():
     assert r.status_code == HTTPStatus.OK
     resp = json.loads(r.text)
     assert resp == "any"
-    controller.playerRegister.assert_called_once_with("aaa")
+    controller.playerRegister.assert_called_once_with({"key":"aaa"})
     t.stop()
 
