@@ -9,6 +9,7 @@ import json
 from unittest.mock import Mock
 from srv.Database import Database
 
+
 class ThreadServer(Thread):
     def __init__(self, controller):
         Thread.__init__(self)
@@ -22,12 +23,14 @@ class ThreadServer(Thread):
         self.srv.stop()
         self.join()
 
+
 @pytest.mark.timeout(3)
 def test_stop():
     t = ThreadServer(None)
     t.start()
     time.sleep(.1)
     t.stop()
+
 
 @pytest.mark.timeout(3)
 def test_handler():
@@ -40,6 +43,5 @@ def test_handler():
     assert r.status_code == HTTPStatus.OK
     resp = json.loads(r.text)
     assert resp == "any"
-    controller.playerRegister.assert_called_once_with({"key":"aaa"})
+    controller.playerRegister.assert_called_once_with({"key": "aaa"})
     t.stop()
-

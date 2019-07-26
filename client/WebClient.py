@@ -8,6 +8,7 @@ from http import HTTPStatus
 # Based on this table: https://docs.python.org/3.6/library/urllib.parse.html#urllib.parse.urlsplit
 URLIB_QUERY_INDEX = 3
 
+
 class WebClient:
     def __init__(self, loop):
         self.cntr = 0
@@ -40,8 +41,8 @@ class WebClient:
                 return text
 
     def sendPostRequest():
-        return self.loop.create_task(self._send_post(url,data))
-    
+        return self.loop.create_task(self._send_post(url, data))
+
     async def _openWS(self, url, **kvargs):
         while True:
             try:
@@ -50,10 +51,9 @@ class WebClient:
             except Exception as e:
                 logging.info(f"exception: {e}")
                 await asyncio.sleep(1)
-        
+
     async def openWSConnection(self, url, **kvargs):
         if not self.session:
             self.session = aiohttp.ClientSession()
         res = await self.loop.create_task(self._openWS(url, **kvargs))
         return res
-

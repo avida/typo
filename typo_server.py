@@ -13,6 +13,3 @@ logging.info("Server started")
 controller = Controller.Controller(db)
 srv = WebServer.WebServer(controller)
 srv.run()
-
-
-

@@ -1,6 +1,7 @@
-import logging 
-import asyncio 
+import logging
+import asyncio
 from common.crypto_utils import generateECKey, serializePublicKey, serializeECKey, loadECKey, toBase64, sign, fromBase64
+
 
 class Controller:
     def __init__(self, web_client, db, loop):
@@ -38,7 +39,8 @@ class Controller:
         if key == None:
             logging.info("generating key")
             key = generateECKey()
-            self.db.storeUserInfo("key", {"key": toBase64(serializeECKey(key))})
+            self.db.storeUserInfo(
+                "key", {"key": toBase64(serializeECKey(key))})
             self.db.save()
         else:
             logging.info("loading key")

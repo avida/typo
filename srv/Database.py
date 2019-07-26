@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-import logging 
+import logging
 import json
 import os
+
 
 class Database:
 

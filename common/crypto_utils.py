@@ -14,12 +14,15 @@ def generateECKey():
     private_key = ec.generate_private_key(ec.SECP256K1(), default_backend())
     return private_key
 
+
 def loadECKey(pem_data):
     try:
-        private_key = load_pem_private_key(pem_data, password=None, backend=default_backend())
+        private_key = load_pem_private_key(
+            pem_data, password=None, backend=default_backend())
         return private_key
     except:
         return None
+
 
 def loadPublicKey(pem_data):
     try:
@@ -28,24 +31,28 @@ def loadPublicKey(pem_data):
     except:
         return None
 
+
 def serializeECKey(private_key):
     data = private_key.private_bytes(encoding=serialization.Encoding.PEM,
-                                    format=serialization.PrivateFormat.TraditionalOpenSSL,
-                                    encryption_algorithm=serialization.NoEncryption()
-                                    )
+                                     format=serialization.PrivateFormat.TraditionalOpenSSL,
+                                     encryption_algorithm=serialization.NoEncryption()
+                                     )
     return data
+
 
 def serializePublicKey(public_key):
     data = public_key.public_bytes(serialization.Encoding.PEM,
-                                    format=serialization.PublicFormat.SubjectPublicKeyInfo
-                                    )
+                                   format=serialization.PublicFormat.SubjectPublicKeyInfo
+                                   )
     return data
+
 
 def sign(data, private_key):
     hash = hashes.SHA256()
     signature = private_key.sign(data, ec.ECDSA(hash))
     return signature
-    
+
+
 def verify(data, signature, public_key):
     hash = hashes.SHA256()
     try:
@@ -54,14 +61,17 @@ def verify(data, signature, public_key):
     except InvalidSignature:
         return False
 
+
 def toBase64(data: bytes) -> str:
     return base64.urlsafe_b64encode(data).decode()
 
+
 def fromBase64(data: str) -> bytes:
     try:
-        return  base64.urlsafe_b64decode(data)
+        return base64.urlsafe_b64decode(data)
     except binascii.Error:
         return None
+
 
 def getMD5(data: bytes) -> str:
     m = hashlib.md5()

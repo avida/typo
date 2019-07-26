@@ -4,6 +4,7 @@ import asyncio
 import logging
 import json
 
+
 class WebServer():
     def __init__(self, controller):
         self.controller = controller
@@ -13,11 +14,11 @@ class WebServer():
         asyncio.set_event_loop(self.loop)
 
         self.app.add_routes([
-                    web.get('/', self.handler),
-                    web.get('/register', self.handler),
-                    web.post('/register', self.handler),
-                    web.get('/session', self.ws_handler),
-                       ])
+            web.get('/', self.handler),
+            web.get('/register', self.handler),
+            web.post('/register', self.handler),
+            web.get('/session', self.ws_handler),
+        ])
 
     async def handler(self, request):
         res = self.controller.playerRegister(request.query)
@@ -41,7 +42,7 @@ class WebServer():
         await self.runner.setup()
         site = web.TCPSite(self.runner, 'localhost', 8080)
         await site.start()
-        
+
     def run(self):
         self.loop.create_task(self._run())
         self.loop.run_forever()

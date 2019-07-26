@@ -24,21 +24,20 @@ class Controller:
                 logging.error("Signature doesnt math")
                 return {"result": "error"}
         except Exception as e:
-            return {"result":"error","message": str(e) }
+            return {"result": "error", "message": str(e)}
         client_id = getMD5(key_data)
         user_info = self.db.getUserInfo(client_id)
         if user_info == None:
             logging.info("generating user name")
             name = Faker("uk_UA").name().replace(" ", "_")
-            self.db.storeUserInfo(client_id, {"name": name, "key": key_str })
+            self.db.storeUserInfo(client_id, {"name": name, "key": key_str})
         else:
             logging.info("user found")
             name = user_info["name"]
-        return {"result": "ok", "id": client_id, "name": name }
+        return {"result": "ok", "id": client_id, "name": name}
 
     def playerDisconnected(self, key):
         return {"result": "ok"}
 
-    def playerMsgReceived(self, key , message):
+    def playerMsgReceived(self, key, message):
         return {}
-

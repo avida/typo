@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import asyncio 
+import asyncio
 import logging
 from client import WebClient
 from common import utils
@@ -10,13 +10,15 @@ import os
 
 DB_FILE = "typo.json"
 
+
 class App(Application):
-    config_dir = SwitchAttr("config", str,  help="directory for storing config", default = ".")
+    config_dir = SwitchAttr(
+        "config", str,  help="directory for storing config", default=".")
 
     def make_config_dir(self):
         if not os.path.isdir(self.config_dir):
             os.mkdir(self.config_dir)
-        
+
     def main(self):
         self.make_config_dir()
         utils.setupLogger()
@@ -28,5 +30,6 @@ class App(Application):
         client_controller = Controller.Controller(client, db, loop)
         loop.create_task(client_controller.main())
         loop.run_forever()
+
 
 App.run()
