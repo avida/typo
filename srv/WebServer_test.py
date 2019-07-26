@@ -7,6 +7,7 @@ import pytest
 import requests
 import json
 from unittest.mock import Mock
+from srv.Database import Database
 
 class ThreadServer(Thread):
     def __init__(self, controller):
@@ -30,7 +31,7 @@ def test_stop():
 
 @pytest.mark.timeout(3)
 def test_handler():
-    controller = Controller()
+    controller = Controller(None)
     controller.playerRegister = Mock(return_value="any")
     t = ThreadServer(controller)
     t.start()

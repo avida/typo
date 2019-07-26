@@ -12,6 +12,7 @@ class WebClient:
     def __init__(self, loop):
         self.cntr = 0
         self.loop = loop
+        self.session = None
 
     @staticmethod
     async def _send_get(url):
@@ -41,22 +42,18 @@ class WebClient:
     def sendPostRequest():
         return self.loop.create_task(self._send_post(url,data))
     
-    async def openWS(self, url):
-        async with aiohttp.ClientSession() as session:
-            while True:
-                try:
-                    ws = await session.ws_connect(url)
-                    logging.info("Connected")
-                    break
-                except Exception as e:
-                    logging.info(f"exception: {e}")
-                    await asyncio.sleep(1)
-            while True:
-                await ws.send_str(f"Hi {self.cntr}")
-                self.cntr += 1
+    async def _openWS(self, url, **kvargs):
+        while True:
+            try:
+                ws = await self.session.ws_connect(url, **kvargs)
+                return ws
+            except Exception as e:
+                logging.info(f"exception: {e}")
                 await asyncio.sleep(1)
-                msg = await ws.receive()
-                logging.info(f"response: {msg.data}")
         
-    def openWSConnection(self, url):
-        self.loop.create_task(self.openWS(url))
+    async def openWSConnection(self, url, **kvargs):
+        if not self.session:
+            self.session = aiohttp.ClientSession()
+        res = await self.loop.create_task(self._openWS(url, **kvargs))
+        return res
+

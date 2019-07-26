@@ -20,17 +20,20 @@ class WebServer():
                        ])
 
     async def handler(self, request):
-        if "key" not in request.query:
-            return {"error": "No key parameter"}
         res = self.controller.playerRegister(request.query)
         return web.Response(text=f"{json.dumps(res)}")
 
     async def ws_handler(self, request):
         ws = web.WebSocketResponse()
+        logging.info(f"headers: {request.headers}")
         await ws.prepare(request)
-        async for msg in ws:
-            logging.info(msg.data)
-            await ws.send_str("Message received")
+        client_id = request.headers["id"]
+        try:
+            async for msg in ws:
+                logging.info(msg.data)
+                await ws.send_str(f"Message received from {client_id}")
+        except:
+            logging.info("except")
         return ws
 
     async def _run(self):

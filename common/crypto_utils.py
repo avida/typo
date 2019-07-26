@@ -55,7 +55,7 @@ def verify(data, signature, public_key):
         return False
 
 def toBase64(data: bytes) -> str:
-    return base64.urlsafe_b64encode(data)
+    return base64.urlsafe_b64encode(data).decode()
 
 def fromBase64(data: str) -> bytes:
     try:
