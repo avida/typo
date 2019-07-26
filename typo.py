@@ -4,7 +4,7 @@ import logging
 from client import WebClient
 from common import utils
 from client import Controller
-from plumbum.cli import Application, SwitchAttr, switch
+from plumbum.cli import Application, SwitchAttr
 from srv.Database import JsonDatabase
 import os
 

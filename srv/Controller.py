@@ -27,7 +27,7 @@ class Controller:
             return {"result": "error", "message": str(e)}
         client_id = getMD5(key_data)
         user_info = self.db.getUserInfo(client_id)
-        if user_info == None:
+        if user_info is None:
             logging.info("generating user name")
             name = Faker("uk_UA").name().replace(" ", "_")
             self.db.storeUserInfo(client_id, {"name": name, "key": key_str})

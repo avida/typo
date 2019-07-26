@@ -20,7 +20,7 @@ def loadECKey(pem_data):
         private_key = load_pem_private_key(
             pem_data, password=None, backend=default_backend())
         return private_key
-    except:
+    except Exception:
         return None
 
 
@@ -28,22 +28,24 @@ def loadPublicKey(pem_data):
     try:
         key = load_pem_public_key(pem_data, backend=default_backend())
         return key
-    except:
+    except Exception:
         return None
 
 
 def serializeECKey(private_key):
-    data = private_key.private_bytes(encoding=serialization.Encoding.PEM,
-                                     format=serialization.PrivateFormat.TraditionalOpenSSL,
-                                     encryption_algorithm=serialization.NoEncryption()
-                                     )
+    data = private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.TraditionalOpenSSL,
+        encryption_algorithm=serialization.NoEncryption()
+    )
     return data
 
 
 def serializePublicKey(public_key):
-    data = public_key.public_bytes(serialization.Encoding.PEM,
-                                   format=serialization.PublicFormat.SubjectPublicKeyInfo
-                                   )
+    data = public_key.public_bytes(
+        serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo
+    )
     return data
 
 

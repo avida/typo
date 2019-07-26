@@ -33,7 +33,7 @@ class WebServer():
             async for msg in ws:
                 logging.info(msg.data)
                 await ws.send_str(f"Message received from {client_id}")
-        except:
+        except Exception:
             logging.info("except")
         return ws
 

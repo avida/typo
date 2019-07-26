@@ -1,6 +1,5 @@
 from srv.Database import JsonDatabase
 import pytest
-import logging
 
 DB_FILE = "test.json"
 userId = "dummy_id"
@@ -25,6 +24,6 @@ def test_save_load(fx):
     db.storeUserInfo(userId, userInfo)
     db.save()
     db = JsonDatabase(DB_FILE)
-    assert db.getUserInfo(userId) == None
+    assert db.getUserInfo(userId) is None
     db.load()
     assert db.getUserInfo(userId) == userInfo

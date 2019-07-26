@@ -7,7 +7,6 @@ import pytest
 import requests
 import json
 from unittest.mock import Mock
-from srv.Database import Database
 
 
 class ThreadServer(Thread):

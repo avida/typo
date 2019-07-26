@@ -5,7 +5,8 @@ import json
 from urllib.parse import urlsplit, urlunsplit, urlencode
 from http import HTTPStatus
 
-# Based on this table: https://docs.python.org/3.6/library/urllib.parse.html#urllib.parse.urlsplit
+# Based on this table:
+# https://docs.python.org/3.6/library/urllib.parse.html#urllib.parse.urlsplit
 URLIB_QUERY_INDEX = 3
 
 
@@ -40,7 +41,7 @@ class WebClient:
                 text = await response.text()
                 return text
 
-    def sendPostRequest():
+    def sendPostRequest(self, url, data):
         return self.loop.create_task(self._send_post(url, data))
 
     async def _openWS(self, url, **kvargs):

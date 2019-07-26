@@ -1,6 +1,7 @@
 import logging
 import asyncio
-from common.crypto_utils import generateECKey, serializePublicKey, serializeECKey, loadECKey, toBase64, sign, fromBase64
+from common.crypto_utils import generateECKey, serializePublicKey, \
+    serializeECKey, loadECKey, toBase64, sign, fromBase64
 
 
 class Controller:
@@ -17,7 +18,9 @@ class Controller:
             try:
                 res = await self.register()
                 logging.info(res)
-                ws = await self.web_client.openWSConnection("ws://localhost:8080/session", headers={"id": res["id"]})
+                ws = await self.web_client.openWSConnection(
+                            "ws://localhost:8080/session",
+                            headers={"id": res["id"]})
                 logging.info("connected")
                 cntr = 0
                 while True:
@@ -36,7 +39,7 @@ class Controller:
 
     def register(self):
         key = self.db.getUserInfo("key")
-        if key == None:
+        if key is None:
             logging.info("generating key")
             key = generateECKey()
             self.db.storeUserInfo(
@@ -50,4 +53,8 @@ class Controller:
         key_str = toBase64(key_data)
         key_signature = sign(key_data, key)
         key_signature = toBase64(key_signature)
-        return self.web_client.sendGetRequest("http://localhost:8080/register", query={"key": key_str, "signature": key_signature})
+        return self.web_client.sendGetRequest(
+                                "http://localhost:8080/register",
+                                query={
+                                    "key": key_str,
+                                    "signature": key_signature})

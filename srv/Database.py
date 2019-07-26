@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import logging
 import json
 import os
 
@@ -23,7 +22,7 @@ class JsonDatabase(Database):
         self.save()
 
     def getUserInfo(self, userId):
-        if not userId in self.users:
+        if userId not in self.users:
             return None
         return self.users[userId]
 

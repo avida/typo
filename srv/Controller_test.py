@@ -1,5 +1,4 @@
 from srv.Controller import Controller
-import json
 
 
 def test_playerRegister():

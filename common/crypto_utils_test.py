@@ -10,7 +10,8 @@ def getRandomBytes(length):
 def test_generate_key():
     key = crypto_utils.generateECKey()
     assert type(
-        key) == cryptography.hazmat.backends.openssl.ec._EllipticCurvePrivateKey
+        key) == \
+        cryptography.hazmat.backends.openssl.ec._EllipticCurvePrivateKey
 
 
 def test_serialize_key():
@@ -40,7 +41,7 @@ def test_base64():
     assert len(undec) != 0
     assert undec == key_data
     some_key = crypto_utils.fromBase64("_____")
-    assert some_key == None
+    assert some_key is None
 
 
 def test_sign_data():
@@ -65,12 +66,12 @@ def test_load_bad_key():
     public_key_data = crypto_utils.serializePublicKey(key.public_key())
     random_data = getRandomBytes(len(key_data))
     bad_key = crypto_utils.loadECKey(random_data)
-    assert bad_key == None
+    assert bad_key is None
     random_data = getRandomBytes(len(public_key_data))
     bad_key = crypto_utils.loadPublicKey(None)
-    assert bad_key == None
+    assert bad_key is None
     bad_key = crypto_utils.loadPublicKey(random_data)
-    assert bad_key == None
+    assert bad_key is None
 
 
 def test_hash():
