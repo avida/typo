@@ -18,15 +18,19 @@ class WebServer():
             web.get('/register', self.handler),
             web.post('/register', self.handler),
             web.get('/session', self.ws_handler),
+            web.get('/info', self.info_handler),
         ])
 
+    async def info_handler(self, request):
+        info = self.controller.getInfo()
+        return web.Response(text=info)
+        
     async def handler(self, request):
         res = self.controller.playerRegister(request.query)
         return web.Response(text=f"{json.dumps(res)}")
 
     async def ws_handler(self, request):
         ws = web.WebSocketResponse()
-        logging.info(f"headers: {request.headers}")
         client_id = request.headers["id"]
         await ws.prepare(request)
         await self.controller.sessionStarted(client_id, ws)
@@ -34,8 +38,8 @@ class WebServer():
             async for msg in ws:
                 await self.controller.messageReceived(msg, ws)
         except Exception as e:
-            logging.info(f"except: {e}")
-            self.controller.playerDisconnected(client_id)
+            logging.info(f"except: {e} whle while processing {client_id} connection")
+            await self.controller.playerDisconnected(client_id)
         return ws
 
     async def _run(self):

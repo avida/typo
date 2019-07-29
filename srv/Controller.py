@@ -39,11 +39,25 @@ class Controller:
             name = user_info["name"]
         return {"result": "ok", "id": client_id, "name": name}
 
-    def playerDisconnected(self, client_id):
+    async def playerDisconnected(self, client_id):
         if self.db is not None:
             user_info = self.db.getUserInfo(client_id)
             logging.info(f'Player {user_info["name"]} disconnected')
+        if self.session_mgr is not None:
+            self.session_mgr.clientDisconnected(client_id)
+            await self.makeMatch()
         return {"result": "ok"}
+
+    async def makeMatch(self):
+        clients_matched = self.session_mgr.tryToMatch()
+        if clients_matched:
+            client1, client2 = clients_matched
+            await client1.ws_connection.send_str(
+                    f"hi, session found with "
+                    f"{client2.client_info['name']}")
+            await client2.ws_connection.send_str(
+                    f"hi, session found with "
+                    f"{client1.client_info['name']}")
 
     async def sessionStarted(self, client_id, ws):
         client_info = self.db.getUserInfo(client_id)
@@ -52,19 +66,24 @@ class Controller:
                                   ws_connection=ws,
                                   client_info=client_info)
         self.session_mgr.addToSearching(clientState)
+        await self.makeMatch()
+        return
         if self.session_mgr.tryToMatch():
             mate = self.session_mgr.getClientMates(client_id)[0]
             session = self.session_mgr.getGameSession(client_id)
             mate_state = session.getClientState(mate)
             await ws.send_str(
                     f"hi, {client_id}, session found with "
-                    "{mate_state.client_info['name']}")
+                    f"{mate_state.client_info['name']}")
             await  mate_state.ws_connection.send_str(
                     f"Found opponent {client_info['name']}")
 
     async def messageReceived(self, msg, ws):
         logging.info(msg.data)
         await ws.send_str(f"response {msg.data}")
+
+    def getInfo(self):
+        return repr(self.session_mgr)
 
     def playerMsgReceived(self, key, message):
         return {}

@@ -10,7 +10,7 @@ class ClientState:
 
 @attr.s
 class GameSession():
-    clients = attr.ib(default={}, init=False)
+    clients = attr.ib(factory=dict, init=False)
 
     def hasClient(self, client_id):
         return client_id in self.clients
@@ -26,10 +26,11 @@ class GameSession():
 
 @attr.s
 class SessionMgr:
-    sessions = attr.ib(default={})
-    searching_for_game = attr.ib(default={})
+    sessions = attr.ib(factory=dict)
+    searching_for_game = attr.ib(factory=dict)
 
     def addToSearching(self, client: ClientState):
+        print(client.client_id)
         if client.client_id not in self.searching_for_game:
             self.searching_for_game[client.client_id] = client
 
@@ -38,7 +39,7 @@ class SessionMgr:
 
     def tryToMatch(self):
         if len(self.searching_for_game) < 2:
-            return False
+            return None
         clients_id_matched = list(self.searching_for_game.keys())[:2]
         clients_matched = []
         for client_id in clients_id_matched:
@@ -46,9 +47,8 @@ class SessionMgr:
             clients_matched.append(client)
         return self.match(clients_matched)
 
-    def match(self, clients):
-        self.startGameSession(clients)
-        return True
+    def match(self, clients: []):
+        return self.startGameSession(clients)
 
     def startGameSession(self, clients):
         session = GameSession()
@@ -56,6 +56,7 @@ class SessionMgr:
             session.addClient(client)
         for client in clients:
             self.sessions[client.client_id] = session
+        return tuple(session.clients.values())
 
     def getGameSession(self, client_id: str):
         return self.sessions.get(client_id, None)
@@ -64,6 +65,21 @@ class SessionMgr:
         session = self.getGameSession(client_id)
         for client in session.clients:
             self.sessions.pop(client)
+
+    def clientDisconnected(self, client_id):
+        if client_id in self.searching_for_game:
+            self.searching_for_game.pop(client_id)
+            return True
+        else:
+            session = self.getGameSession(client_id)
+            if session is not None:
+                mate = self.getClientMates(client_id)[0]
+                mate_state = session.getClientState(mate)
+                self.endGameSession(client_id)
+                self.addToSearching(mate_state)
+                return True
+            else:
+                return False
 
     def getClientMates(self, client_id):
         """
