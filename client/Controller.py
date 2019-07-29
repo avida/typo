@@ -20,8 +20,8 @@ class Controller:
                 res = await self.register()
                 logging.info(res)
                 ws = await self.web_client.openWSConnection(
-                            "ws://localhost:8080/session",
-                            headers={"id": res["id"]})
+                    "ws://localhost:8080/session",
+                    headers={"id": res["id"]})
                 logging.info("connected")
                 cntr = 0
                 while True:
@@ -56,7 +56,7 @@ class Controller:
         key_signature = sign(key_data, key)
         key_signature = toBase64(key_signature)
         return self.web_client.sendGetRequest(
-                                "http://localhost:8080/register",
-                                query={
-                                    "key": key_str,
-                                    "signature": key_signature})
+            "http://localhost:8080/register",
+            query={
+                "key": key_str,
+                "signature": key_signature})

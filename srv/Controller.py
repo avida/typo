@@ -1,11 +1,14 @@
 import logging
+import attr
 from common.crypto_utils import loadPublicKey, fromBase64, verify, getMD5
 from faker import Faker
+from srv.SessionMgr import ClientState
 
 
+@attr.s
 class Controller:
-    def __init__(self, db):
-        self.db = db
+    db = attr.ib(default=None)
+    session_mgr = attr.ib(default=None)
 
     def playerRegister(self, query):
         try:
@@ -43,7 +46,21 @@ class Controller:
         return {"result": "ok"}
 
     async def sessionStarted(self, client_id, ws):
-        await ws.send_str(f"hi, {client_id}")
+        client_info = self.db.getUserInfo(client_id)
+
+        clientState = ClientState(client_id=client_id,
+                                  ws_connection=ws,
+                                  client_info=client_info)
+        self.session_mgr.addToSearching(clientState)
+        if self.session_mgr.tryToMatch():
+            mate = self.session_mgr.getClientMates(client_id)[0]
+            session = self.session_mgr.getGameSession(client_id)
+            mate_state = session.getClientState(mate)
+            await ws.send_str(
+                    f"hi, {client_id}, session found with "
+                    "{mate_state.client_info['name']}")
+            await  mate_state.ws_connection.send_str(
+                    f"Found opponent {client_info['name']}")
 
     async def messageReceived(self, msg, ws):
         logging.info(msg.data)
