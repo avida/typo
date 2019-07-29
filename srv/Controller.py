@@ -1,6 +1,5 @@
 import logging
 import attr
-import asyncio
 from common.crypto_utils import loadPublicKey, fromBase64, verify, getMD5
 from faker import Faker
 from srv.SessionMgr import ClientState

@@ -30,7 +30,6 @@ class SessionMgr:
     searching_for_game = attr.ib(factory=dict)
 
     def addToSearching(self, client: ClientState):
-        print(client.client_id)
         if client.client_id not in self.searching_for_game:
             self.searching_for_game[client.client_id] = client
 
