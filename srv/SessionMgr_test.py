@@ -45,6 +45,7 @@ def test_game_search():
     assert not session_mgr.getGameSession("id1")
     assert not session_mgr.getGameSession("id2")
 
+
 def test_game_match():
     client1 = ClientState("id1")
     client2 = ClientState("id2")
@@ -61,6 +62,7 @@ def test_game_match():
     mates = session_mgr.getClientMates("id1")
     assert len(mates) == 1
     assert mates[0] == "id2"
+
 
 def test_client_diconnected():
     client1 = ClientState("id1")

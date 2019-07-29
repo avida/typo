@@ -27,13 +27,16 @@ class Controller:
                 while True:
                     try:
                         msg = await ws.receive()
-                        logging.info(f"response: {msg.data}")
-                        await asyncio.sleep(1)
-                        logging.info(f"send {cntr}")
-                        await ws.send_str(f"Hi {cntr}")
+                        logging.info(f"msg received: {msg.data}")
+                        if "ping" in msg.data:
+                            await ws.send_str(f"pong {cntr}")
+                        elif "pong" in msg.data:
+                            await ws.send_str(f"ping {cntr}")
+                            await asyncio.sleep(1)
+                        cntr += 1
                     except Exception as e:
                         logging.info(f"e: {e}")
-                    cntr += 1
+                        break
                 break
             except Exception as e:
                 logging.warn(f"Unexpected error: {e}")

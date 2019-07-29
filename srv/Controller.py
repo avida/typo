@@ -1,5 +1,6 @@
 import logging
 import attr
+import asyncio
 from common.crypto_utils import loadPublicKey, fromBase64, verify, getMD5
 from faker import Faker
 from srv.SessionMgr import ClientState
@@ -53,11 +54,12 @@ class Controller:
         if clients_matched:
             client1, client2 = clients_matched
             await client1.ws_connection.send_str(
-                    f"hi, session found with "
-                    f"{client2.client_info['name']}")
+                f"hi, session found with "
+                f"{client2.client_info['name']}")
             await client2.ws_connection.send_str(
-                    f"hi, session found with "
-                    f"{client1.client_info['name']}")
+                f"hi, session found with "
+                f"{client1.client_info['name']}")
+            await client2.ws_connection.send_str("ping")
 
     async def sessionStarted(self, client_id, ws):
         client_info = self.db.getUserInfo(client_id)
@@ -73,14 +75,18 @@ class Controller:
             session = self.session_mgr.getGameSession(client_id)
             mate_state = session.getClientState(mate)
             await ws.send_str(
-                    f"hi, {client_id}, session found with "
-                    f"{mate_state.client_info['name']}")
+                f"hi, {client_id}, session found with "
+                f"{mate_state.client_info['name']}")
             await  mate_state.ws_connection.send_str(
-                    f"Found opponent {client_info['name']}")
+                f"Found opponent {client_info['name']}")
 
-    async def messageReceived(self, msg, ws):
-        logging.info(msg.data)
-        await ws.send_str(f"response {msg.data}")
+    async def messageReceived(self, msg, client_id):
+        session = self.session_mgr.getGameSession(client_id)
+        client = self.db.getUserInfo(client_id)
+        mate = self.session_mgr.getClientMates(client_id)[0]
+        mate_state = session.getClientState(mate)
+        logging.info(f"received {msg.data} from {client['name']} ")
+        await mate_state.ws_connection.send_str(msg.data)
 
     def getInfo(self):
         return repr(self.session_mgr)

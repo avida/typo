@@ -24,7 +24,7 @@ class WebServer():
     async def info_handler(self, request):
         info = self.controller.getInfo()
         return web.Response(text=info)
-        
+
     async def handler(self, request):
         res = self.controller.playerRegister(request.query)
         return web.Response(text=f"{json.dumps(res)}")
@@ -36,9 +36,10 @@ class WebServer():
         await self.controller.sessionStarted(client_id, ws)
         try:
             async for msg in ws:
-                await self.controller.messageReceived(msg, ws)
+                await self.controller.messageReceived(msg, client_id)
         except Exception as e:
-            logging.info(f"except: {e} whle while processing {client_id} connection")
+            logging.info(
+                f"except: {e} whle while processing {client_id} connection")
             await self.controller.playerDisconnected(client_id)
         return ws
 
