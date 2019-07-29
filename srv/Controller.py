@@ -36,8 +36,18 @@ class Controller:
             name = user_info["name"]
         return {"result": "ok", "id": client_id, "name": name}
 
-    def playerDisconnected(self, key):
+    def playerDisconnected(self, client_id):
+        if self.db is not None:
+            user_info = self.db.getUserInfo(client_id)
+            logging.info(f'Player {user_info["name"]} disconnected')
         return {"result": "ok"}
+
+    async def sessionStarted(self, client_id, ws):
+        await ws.send_str(f"hi, {client_id}")
+
+    async def messageReceived(self, msg, ws):
+        logging.info(msg.data)
+        await ws.send_str(f"response {msg.data}")
 
     def playerMsgReceived(self, key, message):
         return {}

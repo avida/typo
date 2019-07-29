@@ -27,14 +27,15 @@ class WebServer():
     async def ws_handler(self, request):
         ws = web.WebSocketResponse()
         logging.info(f"headers: {request.headers}")
-        await ws.prepare(request)
         client_id = request.headers["id"]
+        await ws.prepare(request)
+        await self.controller.sessionStarted(client_id, ws)
         try:
             async for msg in ws:
-                logging.info(msg.data)
-                await ws.send_str(f"Message received from {client_id}")
-        except Exception:
-            logging.info("except")
+                await self.controller.messageReceived(msg, ws)
+        except Exception as e:
+            logging.info(f"except: {e}")
+            self.controller.playerDisconnected(client_id)
         return ws
 
     async def _run(self):

@@ -1,7 +1,8 @@
 import logging
 import asyncio
-from common.crypto_utils import generateECKey, serializePublicKey, \
-    serializeECKey, loadECKey, toBase64, sign, fromBase64
+from common.crypto_utils import (generateECKey, serializePublicKey,
+                                 serializeECKey, loadECKey, toBase64,
+                                 sign, fromBase64)
 
 
 class Controller:
@@ -25,13 +26,14 @@ class Controller:
                 cntr = 0
                 while True:
                     try:
+                        msg = await ws.receive()
+                        logging.info(f"response: {msg.data}")
+                        await asyncio.sleep(1)
+                        logging.info(f"send {cntr}")
                         await ws.send_str(f"Hi {cntr}")
                     except Exception as e:
-                        logging.info(type(e))
+                        logging.info(f"e: {e}")
                     cntr += 1
-                    await asyncio.sleep(1)
-                    msg = await ws.receive()
-                    logging.info(f"response: {msg.data}")
                 break
             except Exception as e:
                 logging.warn(f"Unexpected error: {e}")
