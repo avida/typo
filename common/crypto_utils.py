@@ -6,7 +6,6 @@ from cryptography.hazmat.primitives.serialization import load_pem_public_key
 from cryptography.hazmat.primitives import hashes
 from cryptography.exceptions import InvalidSignature
 import base64
-import binascii
 import hashlib
 
 
@@ -71,7 +70,7 @@ def toBase64(data: bytes) -> str:
 def fromBase64(data: str) -> bytes:
     try:
         return base64.urlsafe_b64decode(data)
-    except binascii.Error:
+    except BaseException:
         return None
 
 

@@ -27,3 +27,9 @@ def test_save_load(fx):
     assert db.getUserInfo(userId) is None
     db.load()
     assert db.getUserInfo(userId) == userInfo
+
+
+def test_wrong_filename():
+    db = JsonDatabase("wrong_db_file.db")
+    db.load()
+    assert db.users == {}

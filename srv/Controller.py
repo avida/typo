@@ -3,6 +3,7 @@ import attr
 from common.crypto_utils import loadPublicKey, fromBase64, verify, getMD5
 from faker import Faker
 from srv.SessionMgr import ClientState
+from utils import makeErrorResponse
 
 
 @attr.s
@@ -12,22 +13,22 @@ class Controller:
 
     def playerRegister(self, query):
         try:
-            key_str = query["key"]
-            signature = query["signature"]
-            signature_data = fromBase64(signature)
-            if signature_data is None:
-                logging.info("Invalid signature")
-                return {"result": "error"}
+            key_str = query.get("key", None)
             key_data = fromBase64(key_str)
             key = loadPublicKey(key_data)
             if key is None:
                 logging.info("Invalid key")
-                return {"result": "error"}
+                return makeErrorResponse("Invalid key")
+            signature = query.get("signature", None)
+            signature_data = fromBase64(signature)
+            if signature_data is None:
+                logging.error("No signature")
+                return makeErrorResponse("No signature")
             if not verify(key_data, signature_data, key):
                 logging.error("Signature doesnt math")
-                return {"result": "error"}
+                return makeErrorResponse("Signature doesnt match")
         except Exception as e:
-            return {"result": "error", "message": str(e)}
+            return makeErrorResponse(str(e))
         client_id = getMD5(key_data)
         user_info = self.db.getUserInfo(client_id)
         if user_info is None:
@@ -46,7 +47,7 @@ class Controller:
         if self.session_mgr is not None:
             self.session_mgr.clientDisconnected(client_id)
             await self.makeMatch()
-        return {"result": "ok"}
+        return makeErrorResponse()
 
     async def makeMatch(self):
         clients_matched = self.session_mgr.tryToMatch()
@@ -68,16 +69,6 @@ class Controller:
                                   client_info=client_info)
         self.session_mgr.addToSearching(clientState)
         await self.makeMatch()
-        return
-        if self.session_mgr.tryToMatch():
-            mate = self.session_mgr.getClientMates(client_id)[0]
-            session = self.session_mgr.getGameSession(client_id)
-            mate_state = session.getClientState(mate)
-            await ws.send_str(
-                f"hi, {client_id}, session found with "
-                f"{mate_state.client_info['name']}")
-            await  mate_state.ws_connection.send_str(
-                f"Found opponent {client_info['name']}")
 
     async def messageReceived(self, msg, client_id):
         session = self.session_mgr.getGameSession(client_id)
