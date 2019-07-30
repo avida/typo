@@ -3,7 +3,7 @@ import attr
 from common.crypto_utils import loadPublicKey, fromBase64, verify, getMD5
 from faker import Faker
 from srv.SessionMgr import ClientState
-from utils import makeErrorResponse
+from common.utils import makeErrorResponse
 
 
 @attr.s
