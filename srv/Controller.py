@@ -59,7 +59,6 @@ class Controller:
             await client2.ws_connection.send_str(
                 f"hi, session found with "
                 f"{client1.client_info['name']}")
-            await client2.ws_connection.send_str("ping")
 
     async def sessionStarted(self, client_id, ws):
         client_info = self.db.getUserInfo(client_id)
@@ -75,8 +74,9 @@ class Controller:
         client = self.db.getUserInfo(client_id)
         mate = self.session_mgr.getClientMates(client_id)[0]
         mate_state = session.getClientState(mate)
-        logging.info(f"received {msg.data} from {client['name']} ")
-        await mate_state.ws_connection.send_str(msg.data)
+        logging.info(f"{msg}")
+        await mate_state.ws_connection.send_str(
+            f"{client['name']}: {msg.data}")
 
     def getInfo(self):
         return repr(self.session_mgr)

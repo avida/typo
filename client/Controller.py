@@ -3,6 +3,9 @@ import asyncio
 from common.crypto_utils import (generateECKey, serializePublicKey,
                                  serializeECKey, loadECKey, toBase64,
                                  sign, fromBase64)
+import sys
+from functools import partial
+from aiohttp import WSMsgType
 
 
 class Controller:
@@ -18,29 +21,36 @@ class Controller:
         while True:
             try:
                 res = await self.register()
-                logging.info(res)
+                logging.info(f"My name is {res['name']}")
                 ws = await self.web_client.openWSConnection(
                     "ws://localhost:8080/session",
                     headers={"id": res["id"]})
-                logging.info("connected")
-                cntr = 0
+                logging.info("ws connected")
+                self.loop.add_reader(sys.stdin,
+                                     partial(Controller.user_data, self, ws))
                 while True:
                     try:
                         msg = await ws.receive()
-                        logging.info(f"msg received: {msg.data}")
-                        if "ping" in msg.data:
-                            await ws.send_str(f"pong {cntr}")
-                        elif "pong" in msg.data:
-                            await ws.send_str(f"ping {cntr}")
-                            await asyncio.sleep(1)
-                        cntr += 1
+                        if msg.type == WSMsgType.CLOSED:
+                            logging.info(f"msg closed")
+                            break
+                        logging.debug(f"{msg}")
                     except Exception as e:
                         logging.info(f"e: {e}")
+                        self.loop.remove_reader(sys.stdin)
                         break
-                break
             except Exception as e:
-                logging.warn(f"Unexpected error: {e}")
+                logging.error(f"except: {e}")
                 await asyncio.sleep(1)
+
+    def user_data(self, ws):
+        line = sys.stdin.readline()
+        line = line.strip()
+
+        async def send_line(ws, line):
+            logging.debug(f"line is {line}")
+            await ws.send_str(line)
+        self.loop.create_task(send_line(ws, line))
 
     def register(self):
         key = self.db.getUserInfo("key")

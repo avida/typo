@@ -21,7 +21,7 @@ class WebClient:
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
                 if response.status != HTTPStatus.OK:
-                    logging.info(f"Unexpected status: {response.status}")
+                    logging.error(f"Unexpected status: {response.status}")
                     return {}
                 text = await response.text()
                 return json.loads(text)
@@ -50,7 +50,7 @@ class WebClient:
                 ws = await self.session.ws_connect(url, **kvargs)
                 return ws
             except Exception as e:
-                logging.info(f"exception: {e}")
+                logging.error(f"Websocket exception: {e}")
                 await asyncio.sleep(1)
 
     async def openWSConnection(self, url, **kvargs):

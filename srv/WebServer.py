@@ -38,8 +38,8 @@ class WebServer():
             async for msg in ws:
                 await self.controller.messageReceived(msg, client_id)
         except Exception as e:
-            logging.info(
-                f"except: {e} whle while processing {client_id} connection")
+            logging.error(
+                f"except: {e} while processing {client_id} connection")
             await self.controller.playerDisconnected(client_id)
         return ws
 

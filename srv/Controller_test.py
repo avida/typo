@@ -35,7 +35,6 @@ def mock_db():
 def test_playerRegisterInvalidKey():
     key = {"key": "someKey"}
     res = Controller().playerRegister(key)
-    print(str(res))
     assert res == makeErrorResponse("Invalid key")
 
 
