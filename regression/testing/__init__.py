@@ -37,7 +37,6 @@ def exception_handler(f):
                 await asyncio.sleep(timeout)
                 wrapper.error = Exception(
                     f"Test is running more than {timeout} seconds")
-                print("canceled")
                 wrapper.task.cancel()
                 await wrapper.task
                 loop.stop()

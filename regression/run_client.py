@@ -2,6 +2,7 @@
 import asyncio
 from testing import shutdown, setupLogger, exception_handler
 from testing.process import AsyncProcess
+from termcolor import colored
 
 
 async def write_lines(stream, lines):
@@ -44,7 +45,7 @@ async def run_connect_test():
             c2.read_until(lambda x: "session found" in x),
             c1.read_until(lambda x: "session found" in x)
         )
-        data = ["line " + str(x) for x in range(900)]
+        data = ["line " + str(x) for x in range(200)]
         loop.create_task(write_lines(c2.p.stdin, data))
         for l in data:
                 r = await c1.read_until(lambda x: l in x)
@@ -78,6 +79,8 @@ async def run_single_client_test():
                 print("other")
         loop.create_task(write_line(c1.p.stdin, "Hello"))
         await asyncio.sleep(1)
+    except BaseException as e:
+        return e
     finally:
         shutdown(srv, c1)
 
@@ -85,9 +88,12 @@ async def run_single_client_test():
 tests = [run_connect_test, run_single_client_test]
 for test in tests:
     try:
-        print(f"run {test.__name__}")
+        print(colored(f"run {test.__name__}", "yellow"))
         res = loop.run_until_complete(test())
-        print(f"result is {res}")
+        if res is None:
+            print(colored("OK", "green"))
+        else:
+            print(colored(f"Test failed: {res}", "red"))
     except RuntimeError:
         print("event loop stopped")
 
