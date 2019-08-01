@@ -5,15 +5,9 @@ import logging
 DEFAULT_TIMEOUT = 30
 
 
-def shutdown(*procs, timeout=0):
-    loop = asyncio.get_event_loop()
-    if timeout is None:
-        for p in procs:
-            p.p.kill()
-    else:
-        tasks = [x.kill(timeout) for x in procs]
-        loop.run_until_complete(asyncio.gather(*tasks))
-
+def shutdown(*procs):
+    for p in procs:
+        p.kill()
 
 def setupLogger(filename):
     logger = logging.getLogger(filename)
@@ -21,23 +15,20 @@ def setupLogger(filename):
     logger.addHandler(logging.FileHandler(filename, mode="w"))
     return logger
 
-
-def async_wait(timeout):
-    async def wait(timeout):
-        await asyncio.sleep(timeout)
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(wait(timeout))
-
-
 def exception_handler(f):
     @wraps(f)
-    def wrapper():
+    async def wrapper():
         loop = asyncio.get_event_loop()
 
         def ex_hndlr(loop, context):
-            print(f"{context}")
+            print(f"Exception catched from the loop {context}")
             wrapper.error = context["exception"]
-            loop.stop()
+            wrapper.task.cancel()
+            async def cancel_task(task):
+                task.cancel()
+                await task
+                loop.stop()
+            loop.create_task(cancel_task(wrapper.task))
         loop.set_exception_handler(ex_hndlr)
         wrapper.error = None
 
@@ -46,11 +37,15 @@ def exception_handler(f):
                 await asyncio.sleep(timeout)
                 wrapper.error = Exception(
                     f"Test is running more than {timeout} seconds")
+                print("canceled")
+                wrapper.task.cancel()
+                await wrapper.task
                 loop.stop()
             except BaseException:
                 pass
         t = loop.create_task(cancel_timeout(DEFAULT_TIMEOUT))
-        res = f()
+        wrapper.task = loop.create_task(f())
+        res = await wrapper.task
         t.cancel()
         if not wrapper.error:
             return res

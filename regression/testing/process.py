@@ -20,8 +20,7 @@ class AsyncProcess:
         self.__on_line = None
         self.killed = False
 
-    async def kill(self, timeout):
-        await asyncio.sleep(timeout)
+    def kill(self):
         self.killed = True
         self.p.kill()
 
