@@ -2,18 +2,20 @@ import asyncio
 from functools import wraps
 import logging
 
-DEFAULT_TIMEOUT = 30
+DEFAULT_TIMEOUT = 3
 
 
 def shutdown(*procs):
     for p in procs:
         p.kill()
 
+
 def setupLogger(filename):
     logger = logging.getLogger(filename)
     logger.setLevel(logging.DEBUG)
     logger.addHandler(logging.FileHandler(filename, mode="w"))
     return logger
+
 
 def exception_handler(f):
     @wraps(f)
@@ -24,10 +26,10 @@ def exception_handler(f):
             print(f"Exception catched from the loop {context}")
             wrapper.error = context["exception"]
             wrapper.task.cancel()
+
             async def cancel_task(task):
                 task.cancel()
                 await task
-                loop.stop()
             loop.create_task(cancel_task(wrapper.task))
         loop.set_exception_handler(ex_hndlr)
         wrapper.error = None
@@ -39,7 +41,6 @@ def exception_handler(f):
                     f"Test is running more than {timeout} seconds")
                 wrapper.task.cancel()
                 await wrapper.task
-                loop.stop()
             except BaseException:
                 pass
         t = loop.create_task(cancel_timeout(DEFAULT_TIMEOUT))

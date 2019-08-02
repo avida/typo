@@ -32,7 +32,7 @@ class Controller:
                     try:
                         msg = await ws.receive()
                         if msg.type == WSMsgType.CLOSED:
-                            logging.info(f"msg closed")
+                            logging.info(f"connection closed")
                             break
                         logging.debug(f"{msg}")
                     except Exception as e:

@@ -19,10 +19,14 @@ class AsyncProcess:
         self.loop = asyncio.get_event_loop()
         self.__on_line = None
         self.killed = False
+        self.failCond = None
 
     def kill(self):
         self.killed = True
         self.p.kill()
+
+    def setFailCondition(self, failCond):
+        self.failCond = failCond
 
     async def spawn(self):
         p = await asyncio.create_subprocess_exec(
@@ -32,6 +36,24 @@ class AsyncProcess:
             stderr=asyncio.subprocess.PIPE)
         self.p = p
         self.loop.create_task(self._listen_output())
+
+    def write_lines(self, lines, delay=0):
+        async def _write_lines(stream, lines, delay):
+            try:
+                for line in lines:
+                    stream.write(line.encode())
+                    stream.write(b'\n')
+                    await stream.drain()
+                    if delay != 0:
+                        await asyncio.sleep(delay)
+            except BaseException:
+                pass
+        if isinstance(lines, str):
+            lines = [lines]
+        self.loop.create_task(_write_lines(
+            self.p.stdin,
+            lines,
+            delay))
 
     async def read_until(self, cond):
         future = asyncio.Future()
@@ -54,5 +76,7 @@ class AsyncProcess:
                     raise UnexpectedExit(self)
                 break
             self.logger.info(f"{line}")
+            if self.failCond and self.failCond(line):
+                raise UnexpectedLine(line)
             if self.__on_line is not None:
                 self.__on_line(line)

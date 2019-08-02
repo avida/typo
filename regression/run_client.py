@@ -4,21 +4,8 @@ from testing import shutdown, setupLogger, exception_handler
 from testing.process import AsyncProcess
 from termcolor import colored
 
-
-async def write_lines(stream, lines):
-    for l in lines:
-        try:
-            stream.write(l.encode())
-            stream.write(b"\n")
-            await stream.drain()
-            await asyncio.sleep(0.01)
-        except ConnectionResetError:
-            print("reset")
-            break
-        except BaseException:
-            print("other")
-
 loop = asyncio.get_event_loop()
+
 
 @exception_handler
 async def run_connect_test():
@@ -40,15 +27,14 @@ async def run_connect_test():
         )
 
         names = map(lambda x: x.split()[-1], names)
-        print(f"{list(names)}")
-        r = await asyncio. gather(
+        await asyncio. gather(
             c2.read_until(lambda x: "session found" in x),
             c1.read_until(lambda x: "session found" in x)
         )
         data = ["line " + str(x) for x in range(200)]
-        loop.create_task(write_lines(c2.p.stdin, data))
+        c2.write_lines(data, delay=0.01)
         for l in data:
-                r = await c1.read_until(lambda x: l in x)
+            await c1.read_until(lambda x: l in x)
     except BaseException as e:
         return e
     finally:
@@ -65,19 +51,14 @@ async def run_single_client_test():
                           logger=setupLogger("client_1.log"))
         await asyncio.gather(
             srv.spawn(), c1.spawn())
+
+        await srv.read_until(lambda x: "user found" in x),
         await c1.read_until(lambda x: "My name" in x),
         await c1.read_until(lambda x: "ws connected" in x),
 
-        async def write_line(stream, line):
-            try:
-                stream.write(line.encode())
-                stream.write(b"\n")
-                await stream.drain()
-            except ConnectionResetError:
-                print("reset")
-            except BaseException:
-                print("other")
-        loop.create_task(write_line(c1.p.stdin, "Hello"))
+        c1.setFailCondition(lambda line: "connection closed" in line)
+        srv.setFailCondition(lambda line: "ERROR:" in line)
+        c1.write_line("Hello")
         await asyncio.sleep(1)
     except BaseException as e:
         return e
@@ -85,7 +66,34 @@ async def run_single_client_test():
         shutdown(srv, c1)
 
 
-tests = [run_connect_test, run_single_client_test]
+@exception_handler
+async def run_clinet_disconnected():
+    try:
+        srv = AsyncProcess("./typo_server.py",
+                           logger=setupLogger("server.log"))
+        c1 = AsyncProcess("./typo.py", "--config",
+                          "test_config/config",
+                          logger=setupLogger("client1.log"))
+        c2 = AsyncProcess("./typo.py", "--config",
+                          "test_config/config2",
+                          logger=setupLogger("client2.log"))
+        await asyncio.gather(
+            srv.spawn(), c1.spawn(), c2.spawn())
+        await asyncio.gather(
+            c1.read_until(lambda x: "ws connected" in x),
+            c2.read_until(lambda x: "ws connected" in x)
+        )
+    except BaseException as e:
+        return e
+    finally:
+        shutdown(srv, c1, c2)
+
+
+tests = [
+    run_connect_test,
+    run_single_client_test,
+    run_clinet_disconnected,
+]
 for test in tests:
     try:
         print(colored(f"run {test.__name__}", "yellow"))
@@ -93,9 +101,8 @@ for test in tests:
         if res is None:
             print(colored("OK", "green"))
         else:
-            print(colored(f"Test failed: {res}", "red"))
+            print(colored(f"Test failed - {type(res).__name__}: {res}", "red"))
+        for t in asyncio.Task.all_tasks():
+            t.cancel()
     except RuntimeError:
         print("event loop stopped")
-
-
-
