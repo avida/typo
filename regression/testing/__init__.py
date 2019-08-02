@@ -3,7 +3,7 @@ from functools import wraps
 import logging
 import os
 
-DEFAULT_TIMEOUT = 30
+DEFAULT_TIMEOUT = 300
 
 
 def shutdown(*procs):
@@ -27,9 +27,11 @@ def maketestdir(base_dir):
             if not os.path.isdir(test_dir):
                 os.mkdir(test_dir)
             kvargs["test_dir"] = test_dir
-            await f(*args, **kvargs)
+            res = await f(*args, **kvargs)
             if hasattr(f, "error"):
                 return f.error
+            else:
+                return res
         return wrapper
     return maketestdir2
 

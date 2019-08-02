@@ -22,6 +22,8 @@ class AsyncProcess:
         self.failCond = None
 
     def kill(self):
+        if not hasattr(self, "p"):
+            return
         if not self.killed:
             self.killed = True
             try:

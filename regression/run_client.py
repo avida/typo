@@ -99,10 +99,36 @@ async def run_clinet_disconnected(test_dir):
         shutdown(srv, c1, c2)
 
 
+@exception_handler
+@maketestdir(TEST_DIR)
+async def run_a_lot_of_clients(test_dir):
+    try:
+        srv = AsyncProcess("./typo_server.py",
+                           logger=setupLogger("server.log", test_dir))
+        clients = []
+        for c in range(10):
+            conf_dir = os.path.join(test_dir, f"config{c}")
+            client_process = AsyncProcess("./typo.py", "--config",
+                                          conf_dir,
+                                          logger=setupLogger(f"client{c}.log",
+                                                             test_dir))
+            clients.append(client_process)
+        await srv.spawn()
+        await asyncio.gather(*[c.spawn() for c in clients])
+        names = await asyncio.gather(
+            *[c.read_until(lambda x: "My name" in x) for c in clients])
+        names = [x.split()[-1] for x in names]
+        print(names)
+    except BaseException as e:
+        return e
+    finally:
+        shutdown(srv, *clients)
+
 tests = [
     run_connect_test,
     run_single_client_test,
     run_clinet_disconnected,
+    run_a_lot_of_clients
 ]
 
 if not os.path.isdir(TEST_DIR):
