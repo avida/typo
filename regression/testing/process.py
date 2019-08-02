@@ -22,8 +22,12 @@ class AsyncProcess:
         self.failCond = None
 
     def kill(self):
-        self.killed = True
-        self.p.kill()
+        if not self.killed:
+            self.killed = True
+            try:
+                self.p.kill()
+            except ProcessLookupError:
+                print(f"Process {self.p.pid} is already dead")
 
     def setFailCondition(self, failCond):
         self.failCond = failCond

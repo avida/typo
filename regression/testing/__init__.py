@@ -1,8 +1,9 @@
 import asyncio
 from functools import wraps
 import logging
+import os
 
-DEFAULT_TIMEOUT = 3
+DEFAULT_TIMEOUT = 30
 
 
 def shutdown(*procs):
@@ -10,20 +11,36 @@ def shutdown(*procs):
         p.kill()
 
 
-def setupLogger(filename):
+def setupLogger(filename, directory=""):
     logger = logging.getLogger(filename)
     logger.setLevel(logging.DEBUG)
+    filename = os.path.join(directory, filename)
     logger.addHandler(logging.FileHandler(filename, mode="w"))
     return logger
 
 
+def maketestdir(base_dir):
+    def maketestdir2(f):
+        @wraps(f)
+        async def wrapper(*args, **kvargs):
+            test_dir = os.path.join(base_dir, f.__name__)
+            if not os.path.isdir(test_dir):
+                os.mkdir(test_dir)
+            kvargs["test_dir"] = test_dir
+            await f(*args, **kvargs)
+            if hasattr(f, "error"):
+                return f.error
+        return wrapper
+    return maketestdir2
+
+
 def exception_handler(f):
     @wraps(f)
-    async def wrapper():
+    async def wrapper(*args, **kvargs):
         loop = asyncio.get_event_loop()
 
         def ex_hndlr(loop, context):
-            print(f"Exception catched from the loop {context}")
+            # print(f"{context}")
             wrapper.error = context["exception"]
             wrapper.task.cancel()
 
@@ -44,7 +61,7 @@ def exception_handler(f):
             except BaseException:
                 pass
         t = loop.create_task(cancel_timeout(DEFAULT_TIMEOUT))
-        wrapper.task = loop.create_task(f())
+        wrapper.task = loop.create_task(f(*args, **kvargs))
         res = await wrapper.task
         t.cancel()
         if not wrapper.error:
