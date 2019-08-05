@@ -19,6 +19,17 @@ def setupLogger(filename, directory=""):
     return logger
 
 
+def tag(tagname):
+    def wrapper(f):
+        @wraps(f)
+        async def wrapper2(*args, **kvargs):
+            res = await f(*args, **kvargs)
+            return res
+        wrapper2.tag = tagname
+        return wrapper2
+    return wrapper
+
+
 def maketestdir(base_dir):
     def maketestdir2(f):
         @wraps(f)

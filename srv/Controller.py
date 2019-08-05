@@ -71,6 +71,10 @@ class Controller:
 
     async def messageReceived(self, msg, client_id):
         session = self.session_mgr.getGameSession(client_id)
+        if not session:
+            client_state = self.session_mgr.findClientState(client_id)
+            await client_state.ws_connection.send_str("Session not found")
+            return
         client = self.db.getUserInfo(client_id)
         mate = self.session_mgr.getClientMates(client_id)[0]
         mate_state = session.getClientState(mate)

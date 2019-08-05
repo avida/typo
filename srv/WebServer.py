@@ -3,6 +3,7 @@ from aiohttp import web
 import asyncio
 import logging
 import json
+import traceback
 
 
 class WebServer():
@@ -38,6 +39,7 @@ class WebServer():
             async for msg in ws:
                 await self.controller.messageReceived(msg, client_id)
         except Exception as e:
+            traceback.print_exc()
             logging.error(
                 f"except: {e} while processing {client_id} connection")
             await self.controller.playerDisconnected(client_id)

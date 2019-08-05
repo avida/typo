@@ -29,6 +29,15 @@ class SessionMgr:
     sessions = attr.ib(factory=dict)
     searching_for_game = attr.ib(factory=dict)
 
+    def findClientState(self, client_id):
+        if self.isSearching(client_id):
+            return self.searching_for_game[client_id]
+        if client_id in self.sessions:
+            session = self.getGameSession(client_id)
+            return session.getClientState(client_id)
+        else:
+            return None
+
     def addToSearching(self, client: ClientState):
         if client.client_id not in self.searching_for_game:
             self.searching_for_game[client.client_id] = client

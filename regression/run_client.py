@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 import asyncio
-from testing import shutdown, setupLogger, exception_handler, maketestdir
+from testing import (shutdown, setupLogger,
+                     exception_handler, maketestdir,
+                     tag)
 from testing.process import AsyncProcess
 from termcolor import colored
 import os
+import argparse
 
 loop = asyncio.get_event_loop()
 
@@ -72,6 +75,7 @@ async def run_single_client_test(test_dir):
 
 
 @exception_handler
+@tag("test")
 @maketestdir(TEST_DIR)
 async def run_clinet_disconnected(test_dir):
     try:
@@ -134,8 +138,22 @@ tests = [
 if not os.path.isdir(TEST_DIR):
     os.mkdir(TEST_DIR)
 
+
+def parseArgs():
+    parser = argparse.ArgumentParser(description="run tests")
+    parser.add_argument("--tag", type=str, metavar="tags",
+                        action="append", default=None)
+    return parser.parse_args()
+
+
+args = parseArgs()
+
 for test in tests:
     try:
+        if args.tag is not None:
+            if not hasattr(test, "tag") or test.tag not in args.tag:
+                print(colored(f"Skipping {test.__name__}", "yellow"))
+                continue
         print(colored(f"run {test.__name__}", "yellow"))
         res = loop.run_until_complete(test())
         if res is None:
