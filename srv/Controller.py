@@ -45,6 +45,12 @@ class Controller:
             user_info = self.db.getUserInfo(client_id)
             logging.info(f'Player {user_info["name"]} disconnected')
         if self.session_mgr is not None:
+            mate = self.session_mgr.getClientMates(client_id)[0]
+            if mate is not None:
+                mate = self.session_mgr.findClientState(mate)
+                user_info = self.db.getUserInfo(client_id)
+                await mate.ws_connection.send_str(
+                    f"your partner {user_info['name']} disconnected")
             self.session_mgr.clientDisconnected(client_id)
             await self.makeMatch()
         return makeErrorResponse()

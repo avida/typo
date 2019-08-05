@@ -38,6 +38,10 @@ class WebServer():
         try:
             async for msg in ws:
                 await self.controller.messageReceived(msg, client_id)
+        except asyncio.CancelledError:
+            logging.info(
+                f"Connection to {client_id} closed")
+            await self.controller.playerDisconnected(client_id)
         except Exception as e:
             traceback.print_exc()
             logging.error(

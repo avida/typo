@@ -2,6 +2,7 @@ import asyncio
 from functools import wraps
 import logging
 import os
+import traceback
 
 DEFAULT_TIMEOUT = 300
 
@@ -24,6 +25,10 @@ def tag(tagname):
         @wraps(f)
         async def wrapper2(*args, **kvargs):
             res = await f(*args, **kvargs)
+            if hasattr(f, "error") and f.error:
+                return f.error
+            else:
+                return res
             return res
         wrapper2.tag = tagname
         return wrapper2
@@ -39,7 +44,7 @@ def maketestdir(base_dir):
                 os.mkdir(test_dir)
             kvargs["test_dir"] = test_dir
             res = await f(*args, **kvargs)
-            if hasattr(f, "error"):
+            if hasattr(f, "error") and f.error:
                 return f.error
             else:
                 return res
@@ -53,7 +58,6 @@ def exception_handler(f):
         loop = asyncio.get_event_loop()
 
         def ex_hndlr(loop, context):
-            # print(f"{context}")
             wrapper.error = context["exception"]
             wrapper.task.cancel()
 
@@ -75,7 +79,15 @@ def exception_handler(f):
                 pass
         t = loop.create_task(cancel_timeout(DEFAULT_TIMEOUT))
         wrapper.task = loop.create_task(f(*args, **kvargs))
-        res = await wrapper.task
+        res = None
+        try:
+            res = await wrapper.task
+        except asyncio.CancelledError:
+            pass
+        except BaseException as e:
+            res = e
+            traceback.print_exc()
+
         t.cancel()
         if not wrapper.error:
             return res

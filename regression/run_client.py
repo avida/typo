@@ -7,14 +7,15 @@ from testing.process import AsyncProcess
 from termcolor import colored
 import os
 import argparse
+import re
 
 loop = asyncio.get_event_loop()
 
 TEST_DIR = "test_dir"
 
 
-@maketestdir(TEST_DIR)
 @exception_handler
+@maketestdir(TEST_DIR)
 async def run_connect_test(test_dir):
     try:
         srv = AsyncProcess("./typo_server.py",
@@ -42,8 +43,6 @@ async def run_connect_test(test_dir):
         c2.write_lines(data, delay=0.01)
         for l in data:
             await c1.read_until(lambda x: l in x)
-    except BaseException as e:
-        return e
     finally:
         shutdown(srv, c1, c2)
 
@@ -68,14 +67,12 @@ async def run_single_client_test(test_dir):
         srv.setFailCondition(lambda line: "ERROR:" in line)
         c.write_lines("Hello")
         await asyncio.sleep(1)
-    except BaseException as e:
-        return e
     finally:
         shutdown(srv, c)
 
 
 @exception_handler
-@tag("test")
+@tag("disconnect")
 @maketestdir(TEST_DIR)
 async def run_clinet_disconnected(test_dir):
     try:
@@ -95,10 +92,9 @@ async def run_clinet_disconnected(test_dir):
             c2.read_until(lambda x: "ws connected" in x)
         )
         c2.kill()
-        await asyncio.sleep(1)
         await srv.read_until(lambda x: "disconnected" in x)
-    except BaseException as e:
-        return e
+        await c1.read_until(lambda x: re.match(r".*partner.*disconnected.*",
+                                               x))
     finally:
         shutdown(srv, c1, c2)
 
@@ -122,9 +118,6 @@ async def run_a_lot_of_clients(test_dir):
         names = await asyncio.gather(
             *[c.read_until(lambda x: "My name" in x) for c in clients])
         names = [x.split()[-1] for x in names]
-        print(names)
-    except BaseException as e:
-        return e
     finally:
         shutdown(srv, *clients)
 

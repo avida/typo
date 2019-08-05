@@ -34,6 +34,8 @@ class SessionMgr:
             return self.searching_for_game[client_id]
         if client_id in self.sessions:
             session = self.getGameSession(client_id)
+            if not session:
+                return None
             return session.getClientState(client_id)
         else:
             return None
@@ -94,4 +96,6 @@ class SessionMgr:
         Return other clients info connected to game session
         """
         session = self.getGameSession(client_id)
+        if not session:
+            return None
         return list(filter(lambda x: x != client_id, session.clients.keys()))
