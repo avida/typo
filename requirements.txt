@@ -1,4 +1,4 @@
-aiohttp==3.5.4
+aiohttp==3.7.4
 requests==2.22.0
 plumbum==1.6.7
 Faker==2.0.0
